@@ -1,0 +1,178 @@
+/* Import font elegante */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+/* Tema chiaro */
+:root {
+  --bg-color: #f9f9f9;
+  --text-color: #111;
+  --subtext-color: #555;
+  --accent-color: #000;
+  --card-bg: #f0f0f0;
+  --border-radius: 12px;
+  --transition: all 0.3s ease;
+  --button-bg: #000;
+  --button-text: #fff;
+  --link-color: #0077ff;
+}
+
+/* Tema scuro */
+body.dark-theme {
+  --bg-color: #121212;
+  --text-color: #f1f1f1;
+  --subtext-color: #bbb;
+  --accent-color: #ffffff;
+  --card-bg: #1e1e1e;
+  --button-bg: #f1f1f1;
+  --button-text: #121212;
+  --link-color: #4ea8ff;
+}
+
+/* Reset generale */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  transition: var(--transition);
+}
+
+/* HEADER */
+header {
+  padding: 2rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-color);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: var(--transition);
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+nav a {
+  margin-left: 2rem;
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+nav a:hover {
+  color: var(--link-color);
+}
+
+/* HERO */
+.hero {
+  padding: 6rem 4rem;
+  text-align: left;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin-bottom: 2rem;
+  color: var(--subtext-color);
+}
+
+/* Bottoni generali */
+.button,
+.button a {
+  background: var(--button-bg);
+  color: var(--button-text);
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.button:hover {
+  transform: scale(1.03);
+  background: var(--accent-color);
+  color: var(--bg-color);
+}
+
+/* SEZIONI */
+.section {
+  padding: 6rem 4rem;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.section h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* FOOTER */
+footer {
+  padding: 3rem 4rem;
+  text-align: center;
+  background: var(--card-bg);
+  color: var(--text-color);
+  transition: var(--transition);
+}
+
+/* Bottoni di login/sign-in */
+.button-sigin {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: var(--transition);
+}
+
+.button-sigin:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+}
+
+/* Stile per i link */
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  text-decoration: underline;
+}
