@@ -24,6 +24,8 @@ $groups_result = $stmt_groups->get_result();
 
 // Determina il gruppo selezionato
 $selected_group_id = isset($_GET['group_id']) ? (int)$_GET['group_id'] : null;
+$mobileActiveClass = $selected_group_id ? 'mobile-active' : '';
+
 $posts_result = null;
 $is_leader = false; // Inizializza la variabile
 
@@ -542,6 +544,8 @@ body[data-theme="dark"] .delete.btn {
       display: inline-block;
       text-decoration: none;
 }
+
+
   </style>
 </head>
 <body>
@@ -836,14 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function showMessage(message, type = 'success', boxType = 'public') {
-    const boxId = boxType === 'invite' ? 'message-box-invite' : 'message-box-public';
-    const box = document.getElementById(boxId);
-    box.textContent = message;
-    box.className = 'message-box ' + (type === 'error' ? 'error' : 'success');
-    box.style.display = 'block';
-    setTimeout(() => { box.style.display = 'none'; }, 5000);
-}
+
   </script>
 </body>
 </html>

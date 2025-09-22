@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && !empty($_
         $conn->query("UPDATE users SET token='$token', token_expiry='$expiry' WHERE id=" . $user['id']);
 
         // Crea link di reset modificare il link in base al dominio e percorso del tuo sito
-        $resetLink = "https://36aff3117c07.ngrok-free.app/link4schooll-sito1/link4schooll-main44/reset_password.php?token=$token";
+        $resetLink = "https://96627346904a.ngrok-free.app/link4schooll-main44/link4schooll-main444/link4schooll-main/reset_password.php?token=$token";
 
         // Invia email
 // Invia email

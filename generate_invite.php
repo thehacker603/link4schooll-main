@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['group_id'])) {
         $stmt_insert->bind_param("is", $group_id, $token);
 
         if ($stmt_insert->execute()) {
-            $invite_link = "http://151.55.137.205/link4schooll-main/join_group.php?token=" . $token;
+            $invite_link = "https://96627346904a.ngrok-free.app/link4schooll-main44\link4schooll-main444\link4schooll-main/join_group.php?token=" . $token;
             echo json_encode(['success' => true, 'invite_link' => $invite_link]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Errore durante la generazione del link di invito.']);
