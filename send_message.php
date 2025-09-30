@@ -14,7 +14,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Prendo i dati in input
+// Dati input
 $sender_id   = intval($_SESSION['user_id']);
 $receiver_id = isset($_POST['to']) ? intval($_POST['to']) : 0;
 $message     = isset($_POST['message']) ? trim($_POST['message']) : '';
@@ -26,7 +26,23 @@ if ($receiver_id <= 0 || $message === '') {
     exit;
 }
 
-// Preparo ed eseguo l'INSERT
+// Controllo se il destinatario ti ha bloccato
+$stmt = $conn->prepare("
+    SELECT 1 FROM user_blocks
+    WHERE blocker_id = ? AND blocked_id = ?
+");
+$stmt->bind_param("ii", $receiver_id, $sender_id);
+$stmt->execute();
+$result = $stmt->get_result();
+if ($result->num_rows > 0) {
+    // Sei bloccato dal destinatario
+    echo json_encode(['status' => 'blocked', 'error' => 'Non puoi inviare messaggi a questo utente']);
+    $stmt->close();
+    exit;
+}
+$stmt->close();
+
+// Inserimento messaggio
 $stmt = $conn->prepare("
     INSERT INTO messages (sender_id, receiver_id, message, sent_at)
     VALUES (?, ?, ?, NOW())
@@ -34,7 +50,6 @@ $stmt = $conn->prepare("
 $stmt->bind_param("iis", $sender_id, $receiver_id, $message);
 
 if (!$stmt->execute()) {
-    // In caso di errore in insert
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
@@ -45,6 +60,4 @@ if (!$stmt->execute()) {
 }
 
 $stmt->close();
-
-// Tutto ok
 echo json_encode(['status' => 'ok']);

@@ -135,186 +135,284 @@ if ($leader_result->num_rows > 0) {
     $is_leader = $leader_result->fetch_assoc()['is_leader'];
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>Gestisci Gruppo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestisci Gruppo</title>
+
+<!-- FONTE -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+
+<!-- CSS -->
 <style>
-:root {
-    --accent-color: #8400ff;
-    --border-radius: 12px;
-    --transition: 0.3s ease;
-    --bg-light: #ffffff;
-    --bg-dark: #1e1e1e;
-    --text-light: #000000;
-    --text-dark: #ffffff;
-    --card-light: #f9f9f9;
-    --card-dark: #2c2c2c;
+/* RESET */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;font-family:'Inter',sans-serif;line-height:1.5}
+img{max-width:100%;display:block}
+ul{list-style:none;padding:0;margin:0}
+button,input,textarea,select{font:inherit}
+
+/* ========================= TOKENS ========================= */
+:root{
+  --accent-300:#7dc7ff; --accent-500:#1f96ff; --accent-600:#0e7ee0;
+  --bg:#0a0d12;
+  --bg-aura:
+    radial-gradient(1000px 700px at 86% -10%, rgba(179,146,255,.14), transparent 60%),
+    radial-gradient(900px 600px at -10% 0%, rgba(87,233,216,.12), transparent 55%),
+    linear-gradient(180deg, #0c111b, #0a0d12);
+  --surface-1: rgba(255,255,255,.10);
+  --surface-2: rgba(255,255,255,.08);
+  --line: rgba(200,220,255,.16);
+  --text-1:#ebf1ff; --text-2:#b8c4da;
+  --glass-blur:16px;
+  --radius:16px; --radius-lg:22px;
+  --shadow-1:0 18px 46px rgba(0,0,0,.55);
+  --shadow-2:0 36px 90px rgba(0,0,0,.7);
+  --container:1200px;
+  --header-h:72px;
+  --ring:0 0 0 4px color-mix(in oklab, var(--accent-500) 36%, transparent);
 }
 
-body { margin:0; font-family:'Segoe UI',sans-serif; background-color:var(--bg-light); color:var(--text-light); transition:var(--transition);}
-body.dark { background-color: var(--bg-dark); color: var(--text-dark);}
-
-header { display:flex; justify-content:space-between; align-items:center; padding:1.5rem 2rem; border-bottom:1px solid #ccc;}
-.header-right { display:flex; align-items:center; gap:1rem;}
-.theme-toggle { cursor:pointer; background:none; border:none; font-size:1.5rem; color:inherit;}
-nav a { display:inline-block; padding:0.5rem 1rem; border:2px solid var(--text-light); border-radius:var(--border-radius); background-color:var(--card-light); color:var(--text-light); font-weight:bold; text-decoration:none; transition:var(--transition);}
-body.dark nav a { border-color: var(--text-dark); background-color: var(--card-dark); color: var(--text-dark);}
-nav a:hover { background-color: var(--text-light); color: var(--card-light);}
-body.dark nav a:hover { background-color: var(--text-dark); color: var(--card-dark);}
-
-main.section { max-width:800px; margin:2rem auto; padding:0 1rem;}
-.card { background-color: var(--card-light); padding:1rem; border-radius:var(--border-radius); margin-bottom:1rem;}
-body.dark .card { background-color: var(--card-dark); }
-.button { background-color: var(--accent-color); color:#fff; border:none; padding:0.5rem 1rem; border-radius:var(--border-radius); cursor:pointer; font-weight:bold; transition:var(--transition);}
-.button:hover { background-color:#00ccff; color:#000;}
-
-/* Ticket link invito */
-.invite-ticket {
-    position: relative;
-    width: 100%;
-    max-width: 360px;
-    margin: 1rem auto;
-    border-radius: var(--border-radius);
-    background: linear-gradient(to bottom, #1b1b1b, #2e2e44);
-    color: #fff;
-    padding: 1rem;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
+/* LIGHT THEME */
+html[data-theme="light"]{
+  --bg:#f3f6fb;
+  --bg-aura:
+    radial-gradient(1100px 700px at 82% -10%, rgba(122,192,255,.20), transparent 60%),
+    radial-gradient(900px 600px at -10% 0%, rgba(111,232,214,.12), transparent 55%),
+    linear-gradient(180deg,#ffffff,#eef3fb);
+  --surface-1: rgba(255,255,255,.70);
+  --surface-2: rgba(255,255,255,.55);
+  --line: rgba(120,140,170,.22);
+  --text-1:#0f141b; --text-2:#5c6577;
+  --shadow-1:0 12px 32px rgba(15,18,22,.12);
+  --shadow-2:0 24px 60px rgba(15,18,22,.18);
 }
-.invite-ticket:hover { transform: translateY(-5px); }
-.invite-ticket a {
-    display: inline-block;
-    margin-top: 1rem;
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
-    background: var(--accent-color);
-    color: #fff;
-    font-weight: bold;
-    text-decoration: none;
-    transition: 0.3s ease;
-}
-.invite-ticket a:hover { background: #00ccff; color: #000; }
 
-footer { text-align:center; padding:2rem 0; font-size:0.9rem; }
+/* BODY + CONTAINER */
+body{background:var(--bg-aura); color:var(--text-1);}
+.main{width:100%; max-width:var(--container); margin:0 auto; padding:24px clamp(12px,4vw,24px);}
+
+/* HEADER */
+header{
+  position:sticky; top:0; z-index:80; height:var(--header-h);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 clamp(16px,4vw,32px);
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  border-bottom:1px solid var(--line);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  backdrop-filter: blur(12px) saturate(1.05);
+  box-shadow: 0 8px 28px rgba(0,0,0,.30);
+}
+.header-right{display:flex;align-items:center;gap:12px;}
+header h1{font-weight:900;font-size:1.6rem;}
+nav a{
+  display:inline-block; padding:0.5rem 1rem;
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--surface-2); color:var(--text-1); font-weight:700;
+  text-decoration:none; transition:.3s;
+}
+nav a:hover{ background:var(--surface-1); }
+
+/* THEME TOGGLE */
+.theme-toggle{cursor:pointer; font-size:1.4rem; background:none; border:none; color:inherit;}
+
+/* PANELS GLASS */
+.panel{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06)),
+    var(--surface-1);
+  border:1px solid var(--line); border-radius:var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding:20px;
+  display:flex; flex-direction:column;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.06);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.06);
+  margin-bottom:1rem;
+}
+
+/* INVITE LINK */
+.invite-ticket a{
+  display:inline-block; margin-top:12px; padding:8px 14px;
+  border-radius:14px; background: var(--accent-500); color:#fff;
+  font-weight:900; text-decoration:none; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition:.3s;
+}
+.invite-ticket a:hover{ background: var(--accent-300); color:#000; }
+
+/* BUTTON LIQUID */
+.btn--liquid{
+  position: relative; isolation: isolate; overflow:clip;
+  border-radius: 18px; border:1px solid rgba(255,255,255,.2);
+  padding:12px 18px; font-weight:900; letter-spacing:.2px;
+  background:transparent; color:var(--text-1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2);
+  cursor:pointer; transition:.2s;
+}
+.btn--liquid::before{
+  content:""; position:absolute; inset:-25% -25%; z-index:-1; border-radius:999px;
+  background: rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  clip-path: polygon(12% 36%,32% 16%,58% 10%,82% 26%,94% 46%,94% 64%,84% 86%,56% 94%,30% 92%,14% 78%,8% 56%);
+  transition:.3s;
+}
+.btn--liquid:hover::before{clip-path: polygon(8% 40%,30% 16%,60% 12%,84% 28%,96% 45%,96% 58%,86% 82%,58% 94%,28% 94%,12% 80%,6% 54%);}
+.btn--liquid:hover{transform:translateY(-1px);}
+
+/* LIST MEMBERS */
+ul.member-list li{
+  display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:14px;
+  background: var(--surface-2); border:1px solid var(--line); margin-bottom:8px;
+}
+
+/* FORM ELEMENTS */
+input[type="text"], textarea{border-radius:12px; border:1px solid var(--line); padding:10px 12px; background:var(--surface-1); color:var(--text-1); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); margin-bottom:12px; width:100%;}
+button.button{margin-left:6px;
+padding: 10px;}
+
+/* TOAST */
+.toast{
+  position: fixed; bottom:18px; left:50%; transform:translateX(-50%);
+  border-radius:14px; padding:12px 20px; font-weight:700; color:#fff; backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); box-shadow:0 16px 40px rgba(0,0,0,.35);
+  transition:opacity .3s, transform .3s; opacity:0; z-index:140; pointer-events:none;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
-<body class="light">
+<body>
+
 <header>
-<h1>Gestisci il Gruppo</h1>
-<div class="header-right">
-<button class="theme-toggle" id="themeToggle" title="Cambia tema">🌙</button>
-<nav>
-<a href="dashboard.php?group_id=<?php echo $group_id; ?>">Torna ai post</a>
-</nav>
-</div>
+  <h1>Gestisci il Gruppo</h1>
+  <div class="header-right">
+    <button class="theme-toggle" id="themeToggle" title="Cambia tema">🌙</button>
+    <nav><a href="dashboard.php?group_id=<?php echo $group_id; ?>">Torna ai post</a></nav>
+  </div>
 </header>
 
-<main class="section">
-<form id="generate-invite-form" class="generate-invite-form" style="margin-bottom: 2rem;">
-<input type="hidden" name="group_id" value="<?php echo $group_id; ?>">
-<button type="submit" class="button">Genera link di invito</button>
-</form>
-<div id="invite-link-container"></div>
+<main class="main">
+  <!-- Genera link invito -->
+  <form id="generate-invite-form" class="panel">
+    <input type="hidden" name="group_id" value="<?php echo $group_id; ?>">
+    <button type="submit" class="btn--liquid">Genera link di invito</button>
+  </form>
+  <div id="invite-link-container"></div>
 
-<h2>Membri del Gruppo</h2>
-<ul class="card" style="padding:1rem; list-style:none;">
-<?php while ($member = $members->fetch_assoc()) { ?>
-<li style="margin-bottom:1rem;">
-<?php echo htmlspecialchars($member['username']); ?>
-<?php if ($member['is_leader']) { ?><strong> (Capo)</strong><?php } ?>
-<?php if ($member['id'] !== $user_id): ?>
-<button type="button" class="button remove_utente" style="margin-left:1rem;" data-user-id="<?php echo $member['id']; ?>">Espelli</button>
-<?php if ($member['is_leader']): ?>
-<button type="button" class="button remove_capo" style="margin-left:0.5rem; background:#e63946;" data-user-id="<?php echo $member['id']; ?>">Rimuovi Capo</button>
-<?php endif; ?>
-<?php endif; ?>
-</li>
-<?php } ?>
-</ul>
+  <!-- Membri -->
+  <h2>Membri del Gruppo</h2>
+  <ul class="member-list panel">
+    <?php while($member = $members->fetch_assoc()){ ?>
+      <li>
+        <span><?php echo htmlspecialchars($member['username']); ?><?php if($member['is_leader']){ ?><strong> (Capo)</strong><?php } ?></span>
+        <?php if($member['id'] !== $user_id): ?>
+          <div>
+            <button type="button" class="btn--liquid remove_utente" data-user-id="<?php echo $member['id']; ?>">Espelli</button>
+            <?php if($member['is_leader']): ?>
+              <button type="button" class="btn--liquid remove_capo" style="background:#e63946;color:#fff;" data-user-id="<?php echo $member['id']; ?>">Rimuovi Capo</button>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
+      </li>
+    <?php } ?>
+  </ul>
 
-<h2 style="margin-top:3rem;">Aggiungi un nuovo capo</h2>
-<form method="POST" class="card" style="padding:1rem;">
-<label for="new_leader_name">Nome Utente:</label><br>
-<input type="text" name="new_leader_name" id="new_leader_name" required style="margin:0.5rem 0; padding:0.8rem; width:95%; border-radius:var(--border-radius); border:1px solid #ccc;"><br>
-<button type="submit" class="button">Promuovi a Capo</button>
-</form>
+  <!-- Aggiungi nuovo capo -->
+  <h2>Aggiungi un nuovo capo</h2>
+  <form method="POST" class="panel">
+    <label for="new_leader_name">Nome Utente:</label>
+    <input type="text" name="new_leader_name" id="new_leader_name" required>
+    <button type="submit" class="btn--liquid">Promuovi a Capo</button>
+  </form>
 </main>
 
-<footer>&copy; <?php echo date("Y"); ?> Link4School</footer>
+<!-- FOOTER -->
+<footer style="text-align:center;padding:20px;color:var(--text-2);">&copy; <?php echo date("Y"); ?> Link4School</footer>
 
+<!-- JS -->
 <script>
-// Tema
 const toggle = document.getElementById('themeToggle');
-const body = document.body;
-const savedTheme = localStorage.getItem('theme') || 'light';
-body.classList.add(savedTheme);
-toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-toggle.addEventListener('click', () => {
-    const isDark = body.classList.contains('dark');
-    body.classList.toggle('dark', !isDark);
-    body.classList.toggle('light', isDark);
-    toggle.textContent = isDark ? '🌙' : '☀️';
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+const html = document.documentElement;
+const savedTheme = localStorage.getItem('theme') || 'dark';
+html.setAttribute('data-theme', savedTheme);
+toggle.textContent = savedTheme==='dark'?'🌙':'☀️';
+
+toggle.addEventListener('click',()=>{
+  const current = html.getAttribute('data-theme');
+  const nextTheme = current==='dark'?'light':'dark';
+  html.setAttribute('data-theme',nextTheme);
+  toggle.textContent = nextTheme==='dark'?'🌙':'☀️';
+  localStorage.setItem('theme',nextTheme);
 });
 
-// Gestione invito
-document.addEventListener('DOMContentLoaded', () => {
-    const generateInviteForm = document.getElementById('generate-invite-form');
-    const inviteLinkContainer = document.getElementById('invite-link-container');
-    generateInviteForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(generateInviteForm);
-        fetch('generate_invite.php', { method:'POST', body:formData })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success){
-                inviteLinkContainer.innerHTML = `<div class="invite-ticket"><p>Link di invito generato:</p><a href="${data.invite_link}" target="_blank">${data.invite_link}</a></div>`;
-            } else {
-                inviteLinkContainer.innerHTML = `<p class="error">${data.message}</p>`;
-            }
-        }).catch(err => {
-            inviteLinkContainer.innerHTML = `<p class="error">Errore: ${err.message}</p>`;
-        });
+// Invito
+document.addEventListener('DOMContentLoaded',()=>{
+  const generateInviteForm=document.getElementById('generate-invite-form');
+  const inviteLinkContainer=document.getElementById('invite-link-container');
+  generateInviteForm.addEventListener('submit',e=>{
+    e.preventDefault();
+    const formData=new FormData(generateInviteForm);
+    fetch('generate_invite.php',{method:'POST',body:formData})
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.success){
+        inviteLinkContainer.innerHTML=`<div class="panel invite-ticket" style="text-align:center; animation:fadeIn .4s ease;">
+          <p>Link di invito generato:</p>
+          <a href="${data.invite_link}" target="_blank">${data.invite_link}</a>
+        </div>`;
+      }else inviteLinkContainer.innerHTML=`<p style="color:#ff6b6b;">${data.message}</p>`;
+    }).catch(err=>{
+      inviteLinkContainer.innerHTML=`<p style="color:#ff6b6b;">Errore: ${err.message}</p>`;
     });
+  });
 
-    // Espelli
-    document.querySelectorAll('.remove_utente').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-            const userId = btn.getAttribute('data-user-id');
-            fetch('manage_group.php?group_id=<?php echo $group_id; ?>', {
-                method:'POST',
-                headers:{'Content-Type':'application/x-www-form-urlencoded'},
-                body:`action=remove_user&user_id=${userId}`
-            }).then(r=>r.json()).then(d=>{
-                if(d.success){btn.closest('li').remove(); alert(d.message);}
-                else alert(d.message);
-            });
-        });
+  // Espelli utente
+  document.querySelectorAll('.remove_utente').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const userId=btn.dataset.userId;
+      fetch(`manage_group.php?group_id=<?php echo $group_id; ?>`,{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`action=remove_user&user_id=${userId}`
+      }).then(r=>r.json()).then(d=>{
+        if(d.success){
+          btn.closest('li').remove();
+          showToast(d.message);
+        }else showToast(d.message,true);
+      });
     });
+  });
 
-    // Rimuovi capo
-    document.querySelectorAll('.remove_capo').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-            const userId = btn.getAttribute('data-user-id');
-            fetch('manage_group.php?group_id=<?php echo $group_id; ?>', {
-                method:'POST',
-                headers:{'Content-Type':'application/x-www-form-urlencoded'},
-                body:`action=remove_leader&user_id=${userId}`
-            }).then(r=>r.json()).then(d=>{
-                if(d.success){
-                    const strong = btn.closest('li').querySelector('strong');
-                    if(strong) strong.remove();
-                    alert(d.message);
-                } else alert(d.message);
-            });
-        });
+  // Rimuovi capo
+  document.querySelectorAll('.remove_capo').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const userId=btn.dataset.userId;
+      fetch(`manage_group.php?group_id=<?php echo $group_id; ?>`,{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`action=remove_leader&user_id=${userId}`
+      }).then(r=>r.json()).then(d=>{
+        if(d.success){
+          const strong=btn.closest('li').querySelector('strong');
+          if(strong) strong.remove();
+          showToast(d.message);
+        }else showToast(d.message,true);
+      });
     });
+  });
+
+  function showToast(message,error=false){
+    let toast=document.createElement('div');
+    toast.className='toast';
+    toast.style.background=error?'rgba(255,50,50,.12)':'rgba(255,255,255,.08)';
+    toast.style.border=error?'1px solid rgba(255,50,50,.3)':'1px solid rgba(255,255,255,.12)';
+    toast.textContent=message;
+    document.body.appendChild(toast);
+    toast.classList.add('show');
+    setTimeout(()=>{ toast.classList.remove('show'); toast.remove(); },3500);
+  }
 });
 </script>
 </body>
 </html>
+

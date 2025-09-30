@@ -898,6 +898,38 @@ textarea{ border-radius:14px; padding:12px 14px }
   outline: none;
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent-500) 36%, transparent);
 }
+.emoji-picker {
+  position: relative;       /* resta sotto la textarea */
+  margin-top: 6px;
+  width: 100%;
+  max-height: 120px;        /* altezza fissa */
+  overflow-y: auto;         /* scroll verticale se troppe emoji */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 32px);
+  gap: 4px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-1);
+  z-index: 50;
+}
+
+.emoji-picker .emoji {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.emoji-picker .emoji:hover {
+  background: rgba(255,255,255,0.15);
+}
+
   </style>
 </head>
 
@@ -953,8 +985,64 @@ textarea{ border-radius:14px; padding:12px 14px }
 
       <!-- Composer (con Ghost) -->
       <form action="dashboard.php?group_id=<?php echo $selected_group_id; ?>" method="POST" class="form-container">
+
+        <?php if ($is_leader): ?>
+            <a href="manage_group.php?group_id=<?php echo $selected_group_id; ?>" class="btn manage-group-btn" style="margin-bottom: 15px; display: inline-block;">
+                Gestisci Gruppo
+            </a>
+        <?php endif; ?>
+
         <input type="hidden" name="action" value="new_post">
         <textarea name="post_content" placeholder="Scrivi qualcosa..." rows="4" required></textarea>
+        <!-- Emoji picker sotto il composer del post -->
+         <div class="emoji-picker" id="emoji-picker-post">
+  <span class="emoji">😀</span><span class="emoji">😃</span><span class="emoji">😄</span><span class="emoji">😁</span>
+  <span class="emoji">😆</span><span class="emoji">😅</span><span class="emoji">😂</span><span class="emoji">🤣</span>
+  <span class="emoji">😊</span><span class="emoji">😇</span><span class="emoji">🙂</span><span class="emoji">🙃</span>
+  <span class="emoji">😉</span><span class="emoji">😌</span><span class="emoji">😍</span><span class="emoji">🥰</span>
+  <span class="emoji">😘</span><span class="emoji">😗</span><span class="emoji">😙</span><span class="emoji">😚</span>
+  <span class="emoji">😋</span><span class="emoji">😛</span><span class="emoji">😝</span><span class="emoji">😜</span>
+  <span class="emoji">🤪</span>
+  <span class="emoji">😀</span><span class="emoji">😃</span><span class="emoji">😄</span><span class="emoji">😁</span>
+<span class="emoji">😆</span><span class="emoji">😅</span><span class="emoji">😂</span><span class="emoji">🤣</span>
+<span class="emoji">😊</span><span class="emoji">😇</span><span class="emoji">🙂</span><span class="emoji">🙃</span>
+<span class="emoji">😉</span><span class="emoji">😌</span><span class="emoji">😍</span><span class="emoji">🥰</span>
+<span class="emoji">😘</span><span class="emoji">😗</span><span class="emoji">😙</span><span class="emoji">😚</span>
+<span class="emoji">😋</span><span class="emoji">😛</span><span class="emoji">😝</span><span class="emoji">😜</span>
+<span class="emoji">🤪</span><span class="emoji">🤨</span><span class="emoji">🧐</span><span class="emoji">🤓</span>
+<span class="emoji">😎</span><span class="emoji">🥳</span><span class="emoji">😏</span><span class="emoji">😒</span>
+<span class="emoji">😞</span><span class="emoji">😔</span><span class="emoji">😟</span><span class="emoji">😕</span>
+<span class="emoji">🙁</span><span class="emoji">☹️</span>
+<span class="emoji">🤗</span><span class="emoji">🤔</span><span class="emoji">🤫</span><span class="emoji">🤭</span>
+<span class="emoji">🤯</span><span class="emoji">😳</span><span class="emoji">🥺</span><span class="emoji">😢</span>
+<span class="emoji">😭</span><span class="emoji">😤</span><span class="emoji">😠</span><span class="emoji">😡</span>
+<span class="emoji">🤬</span><span class="emoji">🤐</span><span class="emoji">🤧</span><span class="emoji">😷</span>
+<span class="emoji">🤒</span><span class="emoji">🤕</span><span class="emoji">🤑</span><span class="emoji">🤠</span>
+<span class="emoji">😈</span><span class="emoji">👿</span><span class="emoji">👹</span><span class="emoji">👺</span>
+<span class="emoji">💀</span><span class="emoji">☠️</span><span class="emoji">👻</span><span class="emoji">👽</span>
+<span class="emoji">🤖</span><span class="emoji">🎅</span>
+<span class="emoji">⚽</span><span class="emoji">🏀</span><span class="emoji">🏈</span><span class="emoji">⚾</span>
+<span class="emoji">🎾</span><span class="emoji">🏐</span><span class="emoji">🏉</span><span class="emoji">🎱</span>
+<span class="emoji">🥊</span><span class="emoji">🥋</span><span class="emoji">🎯</span><span class="emoji">🎳</span>
+<span class="emoji">🎮</span><span class="emoji">🕹️</span><span class="emoji">🎲</span><span class="emoji">♟️</span>
+<span class="emoji">🎼</span><span class="emoji">🎤</span><span class="emoji">🎧</span><span class="emoji">🎷</span>
+<span class="emoji">🚗</span><span class="emoji">🚕</span><span class="emoji">🚙</span><span class="emoji">🚌</span>
+<span class="emoji">🚎</span><span class="emoji">🏎️</span><span class="emoji">🚓</span><span class="emoji">🚑</span>
+<span class="emoji">🚒</span><span class="emoji">🚐</span><span class="emoji">🛻</span><span class="emoji">🚚</span>
+<span class="emoji">🛵</span><span class="emoji">🏍️</span><span class="emoji">🛺</span><span class="emoji">✈️</span>
+<span class="emoji">🚀</span><span class="emoji">🛸</span><span class="emoji">🛳️</span><span class="emoji">⛴️</span>
+<span class="emoji">🍏</span><span class="emoji">🍎</span><span class="emoji">🍐</span><span class="emoji">🍊</span>
+<span class="emoji">🍋</span><span class="emoji">🍌</span><span class="emoji">🍉</span><span class="emoji">🍇</span>
+<span class="emoji">🍓</span><span class="emoji">🫐</span><span class="emoji">🥝</span><span class="emoji">🍒</span>
+<span class="emoji">🍑</span><span class="emoji">🥭</span><span class="emoji">🍍</span><span class="emoji">🥥</span>
+<span class="emoji">🥑</span><span class="emoji">🥦</span><span class="emoji">🥬</span><span class="emoji">🥒</span>
+<span class="emoji">🐶</span><span class="emoji">🐱</span><span class="emoji">🐭</span><span class="emoji">🐹</span>
+<span class="emoji">🐰</span><span class="emoji">🦊</span><span class="emoji">🐻</span><span class="emoji">🐼</span>
+<span class="emoji">🐨</span><span class="emoji">🐯</span><span class="emoji">🦁</span><span class="emoji">🐮</span>
+<span class="emoji">🐷</span><span class="emoji">🐸</span><span class="emoji">🐵</span><span class="emoji">🐔</span>
+<span class="emoji">🐧</span><span class="emoji">🐦</span><span class="emoji">🐤</span><span class="emoji">🦄</span>
+</div>
+
 
         <label class="ghost-toggle">
           <input type="checkbox" id="ghostTogglePost" name="ghost_mode" value="1">
@@ -1274,17 +1362,24 @@ function deletePost(postId, button) {
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: 'post_id=' + encodeURIComponent(postId)
   })
-  .then(r => { if(!r.ok) throw new Error('Errore nella risposta del server'); return r.json(); })
+  .then(r => { 
+      if(!r.ok) throw new Error('Errore nella risposta del server'); 
+      return r.json(); 
+  })
   .then(data => {
-      if (data.success) {Q
-          button.closest('li').remove();
+      if (data.success) {
           showToast('Post eliminato.');
+          // Ricarica la pagina dopo 500ms
+          setTimeout(() => {
+              window.location.reload();
+          }, 500);
       } else {
           showToast(data.message || 'Errore durante l’eliminazione.', true);
       }
   })
   .catch(err => showToast('Errore: ' + err.message, true));
 }
+
 
 // Report helper
 function doReport(type, id){
@@ -1399,6 +1494,37 @@ document.addEventListener('pointermove', e => {
     b.style.setProperty('--lg-y', y + '%');
   });
 });
+document.addEventListener('DOMContentLoaded', () => {
+  // Emoji picker post
+  const postPicker = document.getElementById('emoji-picker-post');
+  const postTextarea = document.querySelector('textarea[name="post_content"]');
+  if (postPicker && postTextarea) {
+    postPicker.querySelectorAll('.emoji').forEach(span => {
+      span.addEventListener('click', () => {
+        const cursorPos = postTextarea.selectionStart;
+        const text = postTextarea.value;
+        postTextarea.value = text.slice(0, cursorPos) + span.textContent + text.slice(cursorPos);
+        postTextarea.focus();
+        postTextarea.selectionEnd = cursorPos + span.textContent.length;
+      });
+    });
+  }
+
+  // Emoji picker comment (ripetere per ogni comment form)
+  document.querySelectorAll('.emoji-picker-comment').forEach(picker => {
+    const textarea = picker.closest('form').querySelector('textarea[name="comment_content"]');
+    picker.querySelectorAll('.emoji').forEach(span => {
+      span.addEventListener('click', () => {
+        const cursorPos = textarea.selectionStart;
+        const text = textarea.value;
+        textarea.value = text.slice(0, cursorPos) + span.textContent + text.slice(cursorPos);
+        textarea.focus();
+        textarea.selectionEnd = cursorPos + span.textContent.length;
+      });
+    });
+  });
+});
+
 </script>
 
 </body>

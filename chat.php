@@ -19,10 +19,18 @@ $stmt->close();
 
 // 2. Utenti con cui ho già chattato
 $stmt = $conn->prepare("
-    SELECT DISTINCT u.id, u.username
+    SELECT DISTINCT u.id, u.username, u.user_image
     FROM users u
-    JOIN messages m ON (u.id = m.sender_id OR u.id = m.receiver_id)
-    WHERE u.id != ? AND (m.sender_id = ? OR m.receiver_id = ?)
+    LEFT JOIN messages m 
+        ON (u.id = m.sender_id OR u.id = m.receiver_id)
+    LEFT JOIN chat_requests r 
+        ON ( (r.sender_id = u.id AND r.receiver_id = ?) 
+             OR (r.sender_id = ? AND r.receiver_id = u.id) )
+    WHERE u.id != ? 
+      AND (
+          m.id IS NOT NULL 
+          OR (r.status = 'approved')
+      )
 ");
 $stmt->bind_param("iii", $my_id, $my_id, $my_id);
 $stmt->execute();
@@ -68,6 +76,15 @@ if ($chat_with) {
     $stmt->fetch();
     $stmt->close();
 }
+$blocked = false;
+if ($chat_with) {
+    $stmt = $conn->prepare("SELECT 1 FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?");
+    $stmt->bind_param("ii", $_SESSION['user_id'], $chat_with);
+    $stmt->execute();
+    $blocked = $stmt->get_result()->num_rows > 0;
+    $stmt->close();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -619,6 +636,110 @@ body::after{
 }
 /* kill cursor trail */
 .cursor-trail, .cursor-trail .spark { display:none !important; }
+/* ======= Input segnalazione ======= */
+form.report-chat {
+  display: block;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+form.report-chat input[type="text"] {
+  flex: 1;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  
+  border: 1px solid var(--stroke-soft);
+  background: var(--glass-2);
+  color: var(--text);
+  font-size: 14px;
+  -webkit-backdrop-filter: blur(calc(var(--blur) * 0.55));
+  backdrop-filter: blur(calc(var(--blur) * 0.55));
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+form.report-chat input[type="text"]::placeholder {
+  color: var(--text-dim);
+}
+
+form.report-chat input[type="text"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 26%, transparent);
+  transform: translateY(-1px);
+}
+
+form.report-chat button.pill {
+  min-width: 120px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke-soft);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #001018;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+form.report-chat button.pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.25);
+}
+
+/* Optional: aggiunge effetto shine come per gli altri pulsanti */
+form.report-chat button.pill::before {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  z-index: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.35) 48%, rgba(255,255,255,.08) 52%, transparent 70%);
+  transform: translateX(-60%) rotate(12deg);
+  transition: transform 0.7s cubic-bezier(.22,.61,.36,1), opacity .3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+form.report-chat button.pill:hover::before {
+  transform: translateX(30%) rotate(12deg);
+  opacity: 0.9;
+}
+.emoji-picker {
+  position: absolute;   /* resta ancorato sotto l'input */
+  bottom: 60px;         /* distanza dall'input */
+  left: 0;
+  width: 100%;
+  max-height: 180px;    /* altezza massima */
+  overflow-y: auto;     /* scroll verticale se troppe emoji */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 36px);
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.emoji-picker .emoji {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  background: white;
+}
+
+.emoji-picker .emoji:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+
 
   </style>
 <body data-theme="dark">
@@ -665,12 +786,20 @@ body::after{
       <?php endwhile; ?>
     </div>
 
-    <h3 class="title">Chat attive</h3>
-    <div class="list">
-      <?php while($c = $result_chatted->fetch_assoc()): ?>
-        <a href="chat.php?with=<?= $c['id'] ?>" class="pill"><?= htmlspecialchars($c['username']) ?></a>
-      <?php endwhile; ?>
-    </div>
+<h3 class="title">Chat attive</h3>
+<div class="list">
+  <?php while($c = $result_chatted->fetch_assoc()): ?>
+    <?php 
+      $chat_img = !empty($c['user_image']) ? $c['user_image'] : "uploads/profile_default.jpg";
+    ?>
+    <a href="chat.php?with=<?= $c['id'] ?>" class="pill" style="display:flex; align-items:center; gap:8px;">
+      <img src="<?= htmlspecialchars($chat_img) ?>" alt="<?= htmlspecialchars($c['username']) ?>" 
+           style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+      <?= htmlspecialchars($c['username']) ?>
+    </a>
+  <?php endwhile; ?>
+</div>
+
 
     <a href="dashboard.php" class="link">← Dashboard</a>
     <a href="logout.php" class="link">Logout</a>
@@ -693,54 +822,139 @@ body::after{
         </form>
       <?php endif; ?>
     <?php else: ?>
-      <div class="chat-head">
-        <div class="head-left">
-          <div class="bigavatar"><?= strtoupper($chat_username[0]) ?></div>
-          <div>
-            <div class="name"><?= htmlspecialchars($chat_username) ?></div>
-            <div class="sub">Chat privata</div>
-          </div>
-        </div>
-      </div>
+<div class="chat-head">
+  <div class="head-left">
+    <div class="bigavatar">
+      <?php 
+        $chat_img = !empty($chat_user_image) 
+                     ? $chat_user_image 
+                     : "uploads/profile_default.jpg"
+      ?>
+      <img src="<?= htmlspecialchars($chat_img) ?>" 
+           alt="<?= htmlspecialchars($chat_username) ?>" 
+           style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+    </div>
+    <div>
+      <div class="name"><?= htmlspecialchars($chat_username) ?></div>
+      <div class="sub">Chat privata</div>
+    </div>
+  </div>
+</div>
+
 
       <div id="chat-box" class="chat-box"></div>
 
-      <form id="chat-form" class="composer">
-        <input type="text" id="msg" name="message" placeholder="Scrivi..." required>
-        <button class="btn" type="submit">Invia</button>
-      </form>
+<form id="chat-form" class="composer" style="position:relative;">
+  <button type="button" id="emoji-btn" class="btn" style="margin-right:6px;">😊</button>
+  <input type="text" id="msg" name="message" placeholder="Scrivi..." required>
+  <button class="btn" type="submit">Invia</button>
+
+  <!-- Emoji picker -->
+  <!-- Contenitore emoji -->
+<!-- Emoji picker sotto l'input -->
+<div class="emoji-picker" id="emoji-picker">
+  <span class="emoji">😀</span><span class="emoji">😃</span><span class="emoji">😄</span><span class="emoji">😁</span>
+  <span class="emoji">😆</span><span class="emoji">😅</span><span class="emoji">😂</span><span class="emoji">🤣</span>
+  <span class="emoji">😊</span><span class="emoji">😇</span><span class="emoji">🙂</span><span class="emoji">🙃</span>
+  <span class="emoji">😉</span><span class="emoji">😌</span><span class="emoji">😍</span><span class="emoji">🥰</span>
+  <span class="emoji">😘</span><span class="emoji">😗</span><span class="emoji">😙</span><span class="emoji">😚</span>
+  <span class="emoji">😋</span><span class="emoji">😛</span><span class="emoji">😝</span><span class="emoji">😜</span>
+  <span class="emoji">🤪</span>
+  <span class="emoji">😀</span><span class="emoji">😃</span><span class="emoji">😄</span><span class="emoji">😁</span>
+<span class="emoji">😆</span><span class="emoji">😅</span><span class="emoji">😂</span><span class="emoji">🤣</span>
+<span class="emoji">😊</span><span class="emoji">😇</span><span class="emoji">🙂</span><span class="emoji">🙃</span>
+<span class="emoji">😉</span><span class="emoji">😌</span><span class="emoji">😍</span><span class="emoji">🥰</span>
+<span class="emoji">😘</span><span class="emoji">😗</span><span class="emoji">😙</span><span class="emoji">😚</span>
+<span class="emoji">😋</span><span class="emoji">😛</span><span class="emoji">😝</span><span class="emoji">😜</span>
+<span class="emoji">🤪</span><span class="emoji">🤨</span><span class="emoji">🧐</span><span class="emoji">🤓</span>
+<span class="emoji">😎</span><span class="emoji">🥳</span><span class="emoji">😏</span><span class="emoji">😒</span>
+<span class="emoji">😞</span><span class="emoji">😔</span><span class="emoji">😟</span><span class="emoji">😕</span>
+<span class="emoji">🙁</span><span class="emoji">☹️</span>
+<span class="emoji">🤗</span><span class="emoji">🤔</span><span class="emoji">🤫</span><span class="emoji">🤭</span>
+<span class="emoji">🤯</span><span class="emoji">😳</span><span class="emoji">🥺</span><span class="emoji">😢</span>
+<span class="emoji">😭</span><span class="emoji">😤</span><span class="emoji">😠</span><span class="emoji">😡</span>
+<span class="emoji">🤬</span><span class="emoji">🤐</span><span class="emoji">🤧</span><span class="emoji">😷</span>
+<span class="emoji">🤒</span><span class="emoji">🤕</span><span class="emoji">🤑</span><span class="emoji">🤠</span>
+<span class="emoji">😈</span><span class="emoji">👿</span><span class="emoji">👹</span><span class="emoji">👺</span>
+<span class="emoji">💀</span><span class="emoji">☠️</span><span class="emoji">👻</span><span class="emoji">👽</span>
+<span class="emoji">🤖</span><span class="emoji">🎅</span>
+<span class="emoji">⚽</span><span class="emoji">🏀</span><span class="emoji">🏈</span><span class="emoji">⚾</span>
+<span class="emoji">🎾</span><span class="emoji">🏐</span><span class="emoji">🏉</span><span class="emoji">🎱</span>
+<span class="emoji">🥊</span><span class="emoji">🥋</span><span class="emoji">🎯</span><span class="emoji">🎳</span>
+<span class="emoji">🎮</span><span class="emoji">🕹️</span><span class="emoji">🎲</span><span class="emoji">♟️</span>
+<span class="emoji">🎼</span><span class="emoji">🎤</span><span class="emoji">🎧</span><span class="emoji">🎷</span>
+<span class="emoji">🚗</span><span class="emoji">🚕</span><span class="emoji">🚙</span><span class="emoji">🚌</span>
+<span class="emoji">🚎</span><span class="emoji">🏎️</span><span class="emoji">🚓</span><span class="emoji">🚑</span>
+<span class="emoji">🚒</span><span class="emoji">🚐</span><span class="emoji">🛻</span><span class="emoji">🚚</span>
+<span class="emoji">🛵</span><span class="emoji">🏍️</span><span class="emoji">🛺</span><span class="emoji">✈️</span>
+<span class="emoji">🚀</span><span class="emoji">🛸</span><span class="emoji">🛳️</span><span class="emoji">⛴️</span>
+<span class="emoji">🍏</span><span class="emoji">🍎</span><span class="emoji">🍐</span><span class="emoji">🍊</span>
+<span class="emoji">🍋</span><span class="emoji">🍌</span><span class="emoji">🍉</span><span class="emoji">🍇</span>
+<span class="emoji">🍓</span><span class="emoji">🫐</span><span class="emoji">🥝</span><span class="emoji">🍒</span>
+<span class="emoji">🍑</span><span class="emoji">🥭</span><span class="emoji">🍍</span><span class="emoji">🥥</span>
+<span class="emoji">🥑</span><span class="emoji">🥦</span><span class="emoji">🥬</span><span class="emoji">🥒</span>
+<span class="emoji">🐶</span><span class="emoji">🐱</span><span class="emoji">🐭</span><span class="emoji">🐹</span>
+<span class="emoji">🐰</span><span class="emoji">🦊</span><span class="emoji">🐻</span><span class="emoji">🐼</span>
+<span class="emoji">🐨</span><span class="emoji">🐯</span><span class="emoji">🦁</span><span class="emoji">🐮</span>
+<span class="emoji">🐷</span><span class="emoji">🐸</span><span class="emoji">🐵</span><span class="emoji">🐔</span>
+<span class="emoji">🐧</span><span class="emoji">🐦</span><span class="emoji">🐤</span><span class="emoji">🦄</span>
+
+</div>
+
+
+</form>
+
     <?php endif; ?>
   </div>
 
   <!-- ======= Right Details (vuoto per ora) ======= -->
 
-  <aside class="details glass">
-    <h3 class="title">Dettagli</h3>
-    <?php if($chat_with && $request_status==='approved'): ?>
-      <div class="card">
-        <div class="head-left">
-          <div class="bigavatar"><?= strtoupper(substr($chat_username,0,1)) ?></div>
-          <div>
-            <div class="name"><?= htmlspecialchars($chat_username) ?></div>
-            <div class="sub">Partner di chat</div>
-          </div>
+ <aside class="details glass">
+  <h3 class="title">Dettagli</h3>
+  <?php if($chat_with && $request_status==='approved'): ?>
+    <div class="card">
+      <div class="head-left">
+        <div class="bigavatar">
+          <?php 
+            $chat_img = !empty($chat_user_image) 
+                         ? $chat_user_image 
+                         : "uploads/profile_default.jpg"
+          ?>
+          <img src="<?= htmlspecialchars($chat_img) ?>" 
+               alt="<?= htmlspecialchars($chat_username) ?>" 
+               style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+        </div>
+        <div>
+          <div class="name"><?= htmlspecialchars($chat_username) ?></div>
+          <div class="sub">Partner di chat</div>
         </div>
       </div>
-      <div class="card kv">
-        <span>Stato</span><div>Connesso</div>
-        <span>Notifiche</span><div>Attive</div>
-        <span>Sicurezza</span><div>Crittografia lato server</div>
-      </div>
-      <div class="card">
-        <button class="pill" type="button" disabled>Blocca (presto)</button>
-        <button class="pill" type="button" disabled>Silenzia (presto)</button>
-      </div>
-    <?php else: ?>
-      <div class="card">
-        <div class="muted">Seleziona una chat per vedere i dettagli.</div>
-      </div>
-    <?php endif; ?>
-  </aside>
+    </div>
+
+<form method="post" action="block_user.php" style="display:inline;">
+    <input type="hidden" name="blocked_id" value="<?= $chat_with ?>">
+    <input type="hidden" name="action" value="<?= $blocked ? 'unblock' : 'block' ?>">
+    <button class="pill" type="submit">
+        <?= $blocked ? 'Sblocca' : 'Blocca' ?>
+    </button>
+</form>
+
+
+<form class="report-chat" method="post" action="report_chat.php">
+  <input type="hidden" name="reported_id" value="<?= $chat_with ?>">
+  <input type="text" name="message" placeholder="Motivo segnalazione" required>
+  <button class="pill" type="submit">Segnala</button>
+</form>
+
+
+
+  <?php else: ?>
+    <div class="card">
+      <div class="muted">Seleziona una chat per vedere i dettagli.</div>
+    </div>
+  <?php endif; ?>
+</aside>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const chatBox = document.getElementById('chat-box');
@@ -781,12 +995,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
-    setInterval(loadMessages, 1000);
+
   }
 });
 
 function togglePeople(){ document.body.classList.toggle('drawer-open-left'); }
 function toggleDetails(){ document.body.classList.toggle('drawer-open-right'); }
+const emojiBtn = document.getElementById('emoji-btn');
+const emojiPicker = document.getElementById('emoji-picker');
+const msgInput = document.getElementById('msg');
+
+// Mostra/nascondi emoji picker
+emojiBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  emojiPicker.style.display = emojiPicker.style.display==='grid' ? 'none' : 'grid';
+});
+
+// Inserisci emoji nel campo
+emojiPicker.querySelectorAll('.emoji').forEach(span=>{
+  span.addEventListener('click', ()=>{
+    msgInput.value += span.textContent;
+    msgInput.focus();
+  });
+});
+
+// Chiudi emoji picker se clicchi fuori
+document.addEventListener('click', ()=>{ emojiPicker.style.display='none'; });
+emojiPicker.addEventListener('click', e=> e.stopPropagation());
+
 </script>
 </body>
 </html>

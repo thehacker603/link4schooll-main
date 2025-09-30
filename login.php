@@ -31,200 +31,213 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Link4Class - Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <title>Login | Link4School</title>
   <style>
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: var(--transition);
+    /* ------------------- VARIABILI ------------------- */
+    :root {
+      --bg: linear-gradient(135deg, #0f172a, #1e293b);
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --glass-blur: 18px;
+
+      --accent: #5d79ff;
+      --accent-2: #21b1ff;
+
+      --text: #f8fafc;
+      --muted: #94a3b8;
+
+      --radius: 20px;
+      --shadow-soft: 0 12px 48px rgba(0, 0, 0, 0.6);
+      --speed: 220ms;
     }
 
-    .form-container {
-      max-width: 400px;
-      margin: 6rem auto;
-      background: var(--card-bg);
-      padding: 3rem 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      position: relative;
-      transition: var(--transition);
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
 
-    #theme-toggle {
+    /* Decorazioni */
+    body::before, body::after {
+      content: "";
       position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: transparent;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-color);
-      transition: var(--transition);
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.25;
+      z-index: 0;
+    }
+    body::before {
+      width: 350px; height: 350px;
+      background: var(--accent);
+      top: -120px; left: -100px;
+    }
+    body::after {
+      width: 400px; height: 400px;
+      background: var(--accent-2);
+      bottom: -150px; right: -120px;
     }
 
-    .form-container h1 {
-      text-align: center;
+    /* ------------------- CARD LOGIN ------------------- */
+    .login-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 2.5rem;
+      border-radius: var(--radius);
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      animation: fadeIn 0.7s ease-out;
+    }
+
+    .login-card h1 {
       font-size: 2rem;
-      font-weight: 800;
+      font-weight: 900;
+      text-align: center;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-card p {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
       margin-bottom: 1rem;
     }
 
+    /* ------------------- FORM ------------------- */
     form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      display: grid;
+      gap: 1.2rem;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
+      gap: 0.4rem;
     }
 
     .input-group label {
-      margin-bottom: 0.5rem;
       font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--muted);
     }
 
-    input[type="text"],
-    input[type="password"] {
-      padding: 1rem;
-      border: 1px solid var(--accent-color);
-      background: transparent;
-      border-radius: var(--border-radius);
+    .input-group input {
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
       font-size: 1rem;
-      color: var(--text-color);
-      transition: var(--transition);
+      transition: border-color var(--speed), box-shadow var(--speed);
     }
 
-    input:focus {
-      border-color: var(--accent-color);
+    .input-group input:focus {
+      border-color: var(--accent);
       outline: none;
+      box-shadow: 0 0 0 2px rgba(93,121,255,0.3);
     }
 
-    button[type="submit"] {
-      margin-top: 1rem;
+    /* ------------------- BUTTON ------------------- */
+    .btn {
+      padding: 0.9rem 1.5rem;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform var(--speed), box-shadow var(--speed);
+      box-shadow: 0 4px 20px rgba(33,177,255,0.4);
     }
 
-    .error {
-      margin-top: 1rem;
-      color: red;
-      text-align: center;
+    .btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 28px rgba(33,177,255,0.6);
     }
 
-    .cyber-footer {
-      text-align: center;
-      margin-top: 2rem;
+    /* ------------------- FOOTER ------------------- */
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
     }
 
-    .nav-btn {
-      display: inline-block;
-      margin: 0 1rem;
-      color: var(--accent-color);
-      text-decoration: none;
+    .footer-links a {
+      color: var(--accent-2);
       font-weight: 600;
-      transition: var(--transition);
+      text-decoration: none;
+      transition: color var(--speed);
     }
 
-    .nav-btn:hover {
-      color: #111;
+    .footer-links a:hover {
+      color: #fff;
     }
 
-    body.dark-theme .nav-btn:hover {
-      color: var(--text-color);
+    /* Animazione */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    footer {
-      margin-top: 2rem;
-      text-align: center;
-      padding: 0;
+    /* ------------------- RESPONSIVE ------------------- */
+    @media (max-width: 500px) {
+      .login-card {
+        margin: 0 1rem;
+        padding: 2rem 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="login-card">
+    <h1>Benvenuto</h1>
+    <p>Accedi al tuo account per continuare</p>
 
-  <div class="form-container">
-    <button id="theme-toggle">🌓</button>
+    <form action="login.php" method="POST">
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Inserisci username" required>
+      </div>
 
-    <h1>Login</h1>
-    <form method="POST">
       <div class="input-group">
-        <label for="login-username">Username</label>
-        <input type="text" id="login-username" name="username" placeholder="Inserisci il tuo username" required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Inserisci password" required>
       </div>
-      <div class="input-group">
-        <label for="login-password">Password</label>
-        <input type="password" id="login-password" name="password" placeholder="Inserisci la password" required>
-        <button type="button" id="toggle-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer;"></button>
-      </div>
-      <button class="button" type="submit">Accedi</button>
-      <?php if(isset($error)): ?>
-        <p class="error"><?php echo $error; ?></p>
-      <?php endif; ?>
+
+      <button type="submit" class="btn">Accedi</button>
     </form>
 
-    <footer class="cyber-footer">
-      <a href="index.php" class="nav-btn">Home</a>
-      <a href="register.php" class="nav-btn">Registrati</a>
-      <a href="send_reset.php" class="nav-btn">Password dimenticata?</a>
-    </footer>
+    <div class="footer-links">
+      <a href="#">Password dimenticata?</a>
+      <a href="#">Registrati</a>
+    </div>
   </div>
-
-  <!-- Script per il tema -->
-  <script>
-    const toggleBtn = document.getElementById('theme-toggle');
-
-    // Applica il tema salvato
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.classList.add('dark-theme');
-    }
-
-    // Imposta l’icona all’avvio
-    toggleBtn.textContent = document.body.classList.contains('dark-theme') ? "☀️" : "🌓";
-
-    toggleBtn.addEventListener('click', () => {
-      document.body.classList.toggle('dark-theme');
-      const isDark = document.body.classList.contains('dark-theme');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      toggleBtn.textContent = isDark ? "☀️" : "🌓";
-    });
-    const passwordInput = document.getElementById('login-password');
-  const togglePasswordBtn = document.getElementById('toggle-password');
-
-  togglePasswordBtn.addEventListener('click', () => {
-    const isPasswordVisible = passwordInput.type === 'text';
-    passwordInput.type = isPasswordVisible ? 'password' : 'text';
-    togglePasswordBtn.textContent = isPasswordVisible ? '👁️' : '🙈';
-  });
-  const toggle = document.getElementById('themeToggle');
-  const body = document.body;
-
-  // Applica il tema salvato
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme) {
-    body.classList.add(savedTheme);
-    toggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-  } else {
-    body.classList.add('light'); // Tema predefinito
-  }
-
-  // Cambia tema al clic
-  toggle.addEventListener('click', () => {
-    const isDark = body.classList.contains('dark');
-    body.classList.toggle('dark', !isDark);
-    body.classList.toggle('light', isDark);
-    toggle.textContent = isDark ? '🌙' : '☀️';
-    localStorage.setItem('theme', isDark ? 'light' : 'dark'); // Salva il tema scelto
-  });
-  </script>
-
 </body>
 </html>
+
 
