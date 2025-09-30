@@ -151,7 +151,7 @@ if ($chat_with) {
       grid-template-rows: 1fr;
       gap: var(--gap);
       padding: var(--gap);
-      overflow:hidden;
+      overflow: hidden;
     }
     body::before{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
@@ -739,6 +739,45 @@ form.report-chat button.pill:hover::before {
   background: rgba(255, 255, 255, 0.12);
 }
 
+.conversation {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 20px); /* altezza della finestra, meno padding/margini se vuoi */
+}
+
+.chat-box {
+  flex: 1;                  /* prende tutto lo spazio rimasto */
+  overflow-y: auto;         /* scrollbar verticale solo per i messaggi */
+  padding: 10px;
+}
+
+.composer {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--line);
+  background: var(--background);
+  flex-shrink: 0;           /* non si restringe */
+  position: relative;        /* necessaria per emoji picker */
+}
+
+.emoji-picker {
+  position: absolute;
+  bottom: 50px;             /* sopra la textbox */
+  left: 0;
+  right: 0;
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+  gap: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  background: var(--background-alt);
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  z-index: 10;
+}
+
 
 
   </style>
@@ -844,10 +883,10 @@ form.report-chat button.pill:hover::before {
 
       <div id="chat-box" class="chat-box"></div>
 
-<form id="chat-form" class="composer" style="position:relative;">
-  <button type="button" id="emoji-btn" class="btn" style="margin-right:6px;">😊</button>
-  <input type="text" id="msg" name="message" placeholder="Scrivi..." required>
-  <button class="btn" type="submit">Invia</button>
+  <form id="chat-form" class="composer">
+    <button type="button" id="emoji-btn" class="btn">😊</button>
+    <input type="text" id="msg" name="message" placeholder="Scrivi..." required>
+    <button class="btn" type="submit">Invia</button>
 
   <!-- Emoji picker -->
   <!-- Contenitore emoji -->
