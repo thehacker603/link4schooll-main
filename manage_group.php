@@ -134,6 +134,32 @@ $leader_result = $stmt_check_leader->get_result();
 if ($leader_result->num_rows > 0) {
     $is_leader = $leader_result->fetch_assoc()['is_leader'];
 }
+// Elimina gruppo e tutti i messaggi (solo creatore)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_group') {
+    if (!$is_creator) {
+        echo json_encode(['success' => false, 'message' => "Solo il creatore può eliminare il gruppo."]);
+        exit();
+    }
+
+    // Cancella tutti i messaggi del gruppo
+    $stmt_delete_messages = $conn->prepare("DELETE FROM group_messages WHERE group_id = ?");
+    $stmt_delete_messages->bind_param("i", $group_id);
+    $stmt_delete_messages->execute();
+
+    // Cancella i membri del gruppo
+    $stmt_delete_members = $conn->prepare("DELETE FROM group_members WHERE group_id = ?");
+    $stmt_delete_members->bind_param("i", $group_id);
+    $stmt_delete_members->execute();
+
+    // Cancella il gruppo
+    $stmt_delete_group = $conn->prepare("DELETE FROM groups WHERE id = ?");
+    $stmt_delete_group->bind_param("i", $group_id);
+    $stmt_delete_group->execute();
+
+    echo json_encode(['success' => true, 'message' => "Gruppo eliminato con successo.", 'redirect' => 'dashboard.php']);
+    exit();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -324,6 +350,13 @@ padding: 10px;}
     <input type="text" name="new_leader_name" id="new_leader_name" required>
     <button type="submit" class="btn--liquid">Promuovi a Capo</button>
   </form>
+  <a href="leave_group.php?group_id=<?php echo $selected_group_id; ?>" 
+   onclick="return confirm('Sei sicuro di voler lasciare il gruppo?');"
+   class="btn--liquid" 
+   style="margin-bottom: 15px; display: inline-block; background-color: #e74c3c; color: white; text-decoration: none;">
+   Lascia Gruppo
+</a>
+
 </main>
 
 <!-- FOOTER -->

@@ -970,6 +970,7 @@ textarea{ border-radius:14px; padding:12px 14px }
     <a href="logout.php" class="btn secondary" id="logout-link">Logout</a>
   </div>
 </header>
+<iframe id="manageFrame" style="width: 100%; height: 500px; border: 1px solid #ccc; display: none;"></iframe>
 
 <main class="main">
   <?php if ($group_access_denied): ?>
@@ -982,6 +983,7 @@ textarea{ border-radius:14px; padding:12px 14px }
     <!-- FEED -->
     <section class="feed">
       <h2>Post del gruppo</h2>
+<div id="manageContainer" style="margin-top: 15px;"></div>
 
       <!-- Composer (con Ghost) -->
       <form action="dashboard.php?group_id=<?php echo $selected_group_id; ?>" method="POST" class="form-container">
@@ -990,7 +992,16 @@ textarea{ border-radius:14px; padding:12px 14px }
             <a href="manage_group.php?group_id=<?php echo $selected_group_id; ?>" class="btn manage-group-btn" style="margin-bottom: 15px; display: inline-block;">
                 Gestisci Gruppo
             </a>
+        <?php else: ?>
+<a href="leave_group.php?group_id=<?php echo $selected_group_id; ?>" 
+   onclick="return confirm('Sei sicuro di voler lasciare il gruppo?');"
+   class="btn leave-group-btn" 
+   style="margin-bottom: 15px; display: inline-block; background-color: #e74c3c; color: white;">
+   Lascia Gruppo
+</a>
         <?php endif; ?>
+
+
 
         <input type="hidden" name="action" value="new_post">
         <textarea name="post_content" placeholder="Scrivi qualcosa..." rows="4" required></textarea>
