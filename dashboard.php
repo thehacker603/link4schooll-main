@@ -91,11 +91,10 @@ $user_id = (int)($_SESSION['user_id'] ?? 0);
 
 /* Gruppi dell'utente */
 $stmt_groups = $conn->prepare("
-    SELECT g.id, g.nome 
-    FROM groups g 
-    JOIN group_members gm ON g.id = gm.group_id 
+    SELECT g.*
+    FROM groups g
+    INNER JOIN group_members gm ON g.id = gm.group_id
     WHERE gm.user_id = ?
-    ORDER BY g.nome ASC
 ");
 if (!$stmt_groups) { die("Errore nella query dei gruppi: " . $conn->error); }
 $stmt_groups->bind_param("i", $user_id);
@@ -314,6 +313,41 @@ if ($selected_group_id) {
         $group_access_denied = true;
     }
 }
+/* ===================== LEAVE GROUP ===================== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['leave_group_id'])) {
+    $leave_group_id = (int)($_POST['leave_group_id']);
+
+    if ($leave_group_id <= 0) {
+        $_SESSION['leave_group_message'] = "ID del gruppo non valido.";
+    } else {
+        // Verifica se l'utente è membro
+        $stmt_check = $conn->prepare("SELECT 1 FROM group_members WHERE user_id = ? AND group_id = ?");
+        $stmt_check->bind_param("ii", $user_id, $leave_group_id);
+        $stmt_check->execute();
+        $stmt_check->store_result();
+
+        if ($stmt_check->num_rows === 0) {
+            $_SESSION['leave_group_message'] = "Non sei membro di questo gruppo.";
+        } else {
+            // Rimuovi l'utente dal gruppo
+            $stmt_del = $conn->prepare("DELETE FROM group_members WHERE user_id = ? AND group_id = ?");
+            $stmt_del->bind_param("ii", $user_id, $leave_group_id);
+            if ($stmt_del->execute()) {
+                // Se stavi visualizzando quel gruppo, chiudi il feed
+                if ($selected_group_id === $leave_group_id) {
+                    header("Location: dashboard.php");
+                    exit();
+                }
+            } else {
+                $_SESSION['leave_group_message'] = "Errore durante l'abbandono del gruppo.";
+            }
+        }
+    }
+    // Ricarica la pagina per mostrare il messaggio
+    header("Location: dashboard.php");
+    exit();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -999,6 +1033,7 @@ textarea{ border-radius:14px; padding:12px 14px }
    style="margin-bottom: 15px; display: inline-block; background-color: #e74c3c; color: white;">
    Lascia Gruppo
 </a>
+
         <?php endif; ?>
 
 
@@ -1180,16 +1215,35 @@ textarea{ border-radius:14px; padding:12px 14px }
 
     <section class="home-panels">
       <!-- LEFT: gruppi -->
+       <?php if (!empty($_SESSION['leave_group_message'])): ?>
+  <p style="color: green; margin-bottom:10px;"><?php 
+      echo htmlspecialchars($_SESSION['leave_group_message']); 
+      unset($_SESSION['leave_group_message']); 
+  ?></p>
+<?php endif; ?>
+
       <div class="panel">
         <h3>I tuoi gruppi</h3>
         <div class="groups-search"><input type="text" id="groupSearch" placeholder="Cerca gruppo..."></div>
         <?php if (count($user_groups) > 0): ?>
           <ul class="group-list" id="groupsList">
-            <?php foreach ($user_groups as $g): ?>
-              <li class="group-item" onclick="window.location.href='?group_id=<?php echo $g['id']; ?>'">
-                <span><?php echo htmlspecialchars($g['nome']); ?></span><span>›</span>
-              </li>
-            <?php endforeach; ?>
+           <ul class="group-list" id="groupsList">
+<?php foreach ($user_groups as $g): ?>
+  <li class="group-item" style="display:flex; justify-content: space-between; align-items:center; padding:6px 10px;">
+    <div style="flex:1; cursor:pointer;" onclick="window.location.href='?group_id=<?php echo $g['id']; ?>'">
+      <?php echo htmlspecialchars($g['nome']); ?>
+    </div>
+
+    <form method="post" onsubmit="return confirm('Sei sicuro di voler lasciare il gruppo «<?php echo htmlspecialchars($g['nome']); ?>»?');" style="margin:0;">
+      <input type="hidden" name="leave_group_id" value="<?php echo $g['id']; ?>">
+      <button type="submit" class="btn" style="background-color:#e74c3c;color:white;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;">
+        Lascia
+      </button>
+    </form>
+  </li>
+<?php endforeach; ?>
+</ul>
+
           </ul>
         <?php else: ?><p class="muted">Nessun gruppo ancora.</p><?php endif; ?>
       </div>

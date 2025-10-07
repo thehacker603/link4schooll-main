@@ -350,12 +350,12 @@ padding: 10px;}
     <input type="text" name="new_leader_name" id="new_leader_name" required>
     <button type="submit" class="btn--liquid">Promuovi a Capo</button>
   </form>
-  <a href="leave_group.php?group_id=<?php echo $selected_group_id; ?>" 
-   onclick="return confirm('Sei sicuro di voler lasciare il gruppo?');"
-   class="btn--liquid" 
-   style="margin-bottom: 15px; display: inline-block; background-color: #e74c3c; color: white; text-decoration: none;">
-   Lascia Gruppo
-</a>
+
+
+  </div>
+
+
+
 
 </main>
 
